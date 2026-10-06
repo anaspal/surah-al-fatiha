@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="منصة تفاعلية لتعليم سورة الفاتحة - مدرسة هدائي 10 - مادة القرآن الكريم">
+    <title>منصة سورة الفاتحة التفاعلية - مدرسة هدائي 10</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hudayi: {
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+                            400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+                            800: '#115e59', 900: '#134e4a', dark: '#013835', brand: '#1ab394'
+                        },
+                        accent: { gold: '#f59e0b', amber: '#d97706', lightGold: '#fef3c7' }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        quran: ['Amiri', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        i.fa-solid, i.fa-regular, i.fa-brands {
+            display: inline-block; font-style: normal; font-variant: normal;
+            text-rendering: auto; line-height: 1;
+        }
+        .quran-text { font-family: 'Amiri', serif; line-height: 2.2; }
+        .active-tab { background-color: #0d9488; color: #ffffff !important; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3); }
+        .hudayi-border { border-color: #1ab394; }
+        .hudayi-bg { background-color: #1ab394; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #14b8a6; border-radius: 10px; }
+        .pulse-subtle { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        .verse-wrong { animation: shake 0.4s; background-color: #fef2f2 !important; border-color: #ef4444 !important; }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .verse-correct { background-color: #ecfdf5 !important; border-color: #10b981 !important; }
+        .task-chip { transition: all 0.3s ease; }
+        .touch-target { min-width: 48px; min-height: 48px; }
+        .header-logo { width: 48px; height: 72px; object-fit: contain; }
+        @media (min-width: 640px) {
+            .header-logo { width: 64px; height: 96px; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-md sticky top-0 z-50 border-b-2 border-hudayi-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-24">
+
+                <div class="flex items-center space-x-4 space-x-reverse cursor-pointer" onclick="switchTab('home')">
+                    <div class="flex flex-col items-center">
+                        <img src="logo.png" alt="شعار مدرسة هدائي" class="header-logo">
+                    </div>
+
+                    <div class="hidden sm:block border-r-2 border-slate-200 pr-4">
+                        <h1 class="text-xl md:text-2xl font-black text-hudayi-800">منصة سورة الفاتحة التفاعلية</h1>
+                        <p class="text-xs text-hudayi-600 font-semibold">مادة القرآن الكريم (الصفوف ٤ - ٥ - ٦)</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex space-x-1 space-x-reverse bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                    <button id="tab-home" onclick="switchTab('home')" class="nav-btn active-tab px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-house"></i> الرئيسية
+                    </button>
+                    <button id="tab-recitation" onclick="switchTab('recitation')" class="nav-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-hudayi-700 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-book-quran"></i> التلاوة والتفسير
+                    </button>
+                    <button id="tab-games" onclick="switchTab('games')" class="nav-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-hudayi-700 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad"></i> الألعاب التفاعلية
+                    </button>
+                    <button id="tab-quiz" onclick="switchTab('quiz')" class="nav-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-hudayi-700 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-award"></i> اختبار المعرفة
+                    </button>
+                    <button id="tab-virtues" onclick="switchTab('virtues')" class="nav-btn px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-hudayi-700 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-star"></i> فضائل السورة
+                    </button>
+                    <button id="complete-btn" onclick="tryShowCompletionScreen()" class="bg-slate-300 text-slate-600 px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 flex items-center gap-2 shadow-md cursor-not-allowed">
+                        <i class="fa-solid fa-lock"></i> <span id="complete-btn-text">المهام: 0/4</span>
+                    </button>
+                </nav>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden text-hudayi-800 text-2xl focus:outline-none p-3 rounded-xl hover:bg-hudayi-50 transition touch-target flex items-center justify-center" aria-label="فتح القائمة">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden pb-4 pt-2 border-t border-slate-100 space-y-2">
+                <button onclick="switchTab('home'); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-bold text-hudayi-800 hover:bg-hudayi-50">الرئيسية</button>
+                <button onclick="switchTab('recitation'); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-bold text-hudayi-800 hover:bg-hudayi-50">التلاوة والتفسير</button>
+                <button onclick="switchTab('games'); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-bold text-hudayi-800 hover:bg-hudayi-50">الألعاب التفاعلية</button>
+                <button onclick="switchTab('quiz'); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-bold text-hudayi-800 hover:bg-hudayi-50">اختبار المعرفة</button>
+                <button onclick="switchTab('virtues'); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-bold text-hudayi-800 hover:bg-hudayi-50">فضائل السورة</button>
+                <button id="complete-btn-mobile" onclick="tryShowCompletionScreen(); toggleMobileMenu()" class="w-full text-right px-4 py-2 rounded-lg font-black text-slate-600 bg-slate-200 cursor-not-allowed">🔒 المهام: 0/4 - أكمل الأنشطة أولاً</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= HOME SECTION ================= -->
+        <section id="section-home" class="space-y-10">
+
+            <div class="bg-gradient-to-r from-amber-50 via-hudayi-50 to-emerald-50 rounded-3xl p-6 md:p-8 border-2 border-hudayi-400 shadow-md">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-hudayi-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md shrink-0">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-extrabold text-hudayi-900">سجّل بياناتك يا بطل قبل بدء التعلم!</h3>
+                            <p class="text-xs md:text-sm text-slate-600 font-semibold">سعرّفنا باسمك وصفّك وسيتم تسجيل درجاتك في المسابقات التفاعلية.</p>
+                        </div>
+                    </div>
+
+                    <div id="student-form" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <input type="text" id="student-name-input" placeholder="اكتب اسمك الثلاثي..." class="px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-hudayi-500 font-bold text-sm flex-grow md:w-60 shadow-sm">
+                        <select id="student-grade-input" class="px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-hudayi-500 font-bold text-sm bg-white shadow-sm">
+                            <option value="الصف الرابع">الصف الرابع</option>
+                            <option value="الصف الخامس">الصف الخامس</option>
+                            <option value="الصف السادس">الصف السادس</option>
+                        </select>
+                        <button onclick="saveStudentInfo()" class="bg-hudayi-600 hover:bg-hudayi-700 text-white font-extrabold px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-check-circle"></i> حفظ وبدء الرحلة
+                        </button>
+                    </div>
+
+                    <div id="student-welcome-badge" class="hidden bg-white px-6 py-3 rounded-2xl border-2 border-hudayi-500 shadow-md flex items-center gap-3">
+                        <div class="w-10 h-10 bg-accent-gold text-slate-900 rounded-full flex items-center justify-center font-black">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 font-bold block">مرحباً بك يا بطل القرآن:</span>
+                            <span id="display-student-name" class="font-black text-hudayi-800 text-lg">...</span>
+                            <span id="display-student-grade" class="text-xs text-hudayi-600 font-bold block">...</span>
+                        </div>
+                        <button onclick="editStudentInfo()" class="text-slate-400 hover:text-slate-600 mr-2 text-xs" title="تعديل البيانات">
+                            <i class="fa-solid fa-pen"></i> تعديل
+                        </button>
+                        <button onclick="resetAllProgress()" class="text-red-400 hover:text-red-600 mr-2 text-xs" title="إعادة تعيين كل البيانات والتقدم">
+                            <i class="fa-solid fa-trash-can"></i> تصفير
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative bg-gradient-to-br from-hudayi-700 via-hudayi-600 to-hudayi-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl overflow-hidden">
+                <div class="absolute -left-12 -top-12 w-64 h-64 bg-hudayi-500 opacity-20 rounded-full blur-2xl"></div>
+                <div class="absolute right-0 bottom-0 w-80 h-80 bg-accent-gold opacity-10 rounded-full blur-3xl"></div>
+
+                <div class="relative z-10 max-w-3xl">
+                    <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-accent-gold text-sm font-semibold mb-6 border border-white/20">
+                        <i class="fa-solid fa-graduation-cap"></i> منصة تعليمية تفاعلية لمادة القرآن الكريم
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+                        مرحباً بكم في رحاب <span class="text-accent-gold">سورة الفاتحة</span>
+                    </h2>
+                    <p class="text-base md:text-lg text-slate-100 mb-8 leading-relaxed">
+                        أعزائي طلاب وطالبات مدرسة هدائي 10، هيا بنا نتعلم سورة الفاتحة (أم الكتاب) ونستمع لآياتها العطرة بصوت الشيخ محمود خليل الحصري، ونكتشف معانيها العظيمة عبر الألعاب والمسابقات الشيقة!
+                    </p>
+
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('recitation')" class="bg-accent-gold hover:bg-accent-amber text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center gap-3 text-base">
+                            <i class="fa-solid fa-circle-play text-xl"></i> قراءة وتلاوة السورة
+                        </button>
+                        <button onclick="switchTab('games')" class="bg-white text-hudayi-800 hover:bg-slate-100 font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center gap-3 text-base">
+                            <i class="fa-solid fa-gamepad text-xl text-hudayi-600"></i> ابدأ الألعاب التفاعلية
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-8 md:mt-0 md:absolute left-8 bottom-8 bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-xl text-center border border-white/30 flex flex-col items-center">
+                    <img src="logo.png" alt="شعار مدرسة هدائي" class="w-16 h-24 object-contain">
+                    <span class="text-slate-900 font-extrabold text-base mt-1">مدرسة هدائي ١٠</span>
+                </div>
+            </div>
+
+            <!-- Progress Card -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h3 class="text-lg font-black text-hudayi-900 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-hudayi-600"></i> مهامك لإتمام الرحلة
+                    </h3>
+                    <span id="progress-counter" class="bg-hudayi-100 text-hudayi-800 font-black px-4 py-1.5 rounded-full text-sm">0 / 4</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div id="task-recitation" class="task-chip bg-slate-100 border-2 border-slate-200 p-3 rounded-2xl text-center">
+                        <i class="fa-solid fa-headphones text-2xl text-slate-400 mb-1"></i>
+                        <p class="text-xs font-bold text-slate-600">سماع السورة كاملة</p>
+                        <span class="task-status text-xs font-black text-slate-400 block mt-1">لم تكتمل</span>
+                    </div>
+                    <div id="task-orderGame" class="task-chip bg-slate-100 border-2 border-slate-200 p-3 rounded-2xl text-center">
+                        <i class="fa-solid fa-arrow-down-1-9 text-2xl text-slate-400 mb-1"></i>
+                        <p class="text-xs font-bold text-slate-600">ترتيب الآيات</p>
+                        <span class="task-status text-xs font-black text-slate-400 block mt-1">لم تكتمل</span>
+                    </div>
+                    <div id="task-matchGame" class="task-chip bg-slate-100 border-2 border-slate-200 p-3 rounded-2xl text-center">
+                        <i class="fa-solid fa-link text-2xl text-slate-400 mb-1"></i>
+                        <p class="text-xs font-bold text-slate-600">مطابقة المعاني</p>
+                        <span class="task-status text-xs font-black text-slate-400 block mt-1">لم تكتمل</span>
+                    </div>
+                    <div id="task-quiz" class="task-chip bg-slate-100 border-2 border-slate-200 p-3 rounded-2xl text-center">
+                        <i class="fa-solid fa-trophy text-2xl text-slate-400 mb-1"></i>
+                        <p class="text-xs font-bold text-slate-600">الاختبار النهائي</p>
+                        <span class="task-status text-xs font-black text-slate-400 block mt-1">لم تكتمل</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div onclick="switchTab('recitation')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group">
+                    <div class="w-14 h-14 bg-hudayi-100 text-hudayi-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:bg-hudayi-600 group-hover:text-white transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">تلاوة الشيخ الحصري</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">استمع لآيات سورة الفاتحة مرتلة برواية حفص عن عاصم بصوت الشيخ محمود خليل الحصري مع إمكانية التكرار.</p>
+                </div>
+
+                <div onclick="switchTab('games')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group">
+                    <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:bg-amber-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-puzzle-piece"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">ألعاب تعليمية تفاعلية</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">العب لعبة ترتيب الآيات، ولعبة وصل المفردات بمعانيها، وعجلة الأسئلة التفاعلية المرحة.</p>
+                </div>
+
+                <div onclick="switchTab('quiz')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer group">
+                    <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">اختبر معلوماتك</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">أسئلة مشوقة تقيس مدى فهمك وتدبرك لسورة الفاتحة مع الحصول على نجوم ووسام التفوق.</p>
+                </div>
+            </div>
+
+            <div class="next-stage-nav" data-stage="home"></div>
+        </section>
+
+        <!-- ================= RECITATION & TAFSIR SECTION ================= -->
+        <section id="section-recitation" class="hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-hudayi-50 p-6 rounded-2xl border border-hudayi-200">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-hudayi-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
+                            <i class="fa-solid fa-book-quran"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-hudayi-900">تلاوة وقراءة سورة الفاتحة كاملة</h2>
+                            <p class="text-sm font-semibold text-hudayi-700">برواية حفص عن عاصم - بصوت الشيخ محمود خليل الحصري (رحمه الله)</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="playFullSurah()" class="bg-hudayi-600 hover:bg-hudayi-700 text-white font-bold px-5 py-3 rounded-xl shadow-md flex items-center gap-2 transition pulse-subtle">
+                            <i class="fa-solid fa-play" id="main-play-icon"></i>
+                            <span id="main-play-text">سماع سورة الفاتحة كاملة</span>
+                        </button>
+                        <button onclick="pauseAudio()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-3 rounded-xl transition">
+                            <i class="fa-solid fa-pause"></i> إيقاف مؤقت
+                        </button>
+                    </div>
+                </div>
+
+                <audio id="quran-audio" class="hidden" preload="auto"></audio>
+
+                <div class="space-y-4">
+                    <div id="verses-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div class="next-stage-nav" data-stage="recitation"></div>
+        </section>
+
+        <!-- ================= GAMES SECTION ================= -->
+        <section id="section-games" class="hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <span class="bg-amber-100 text-amber-800 text-xs font-black px-3 py-1 rounded-full">ألعاب تفاعلية مسلية</span>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mt-2">تعلم والعب مع سورة الفاتحة</h2>
+                    <p class="text-slate-600 text-sm mt-1">اختر اللعبة وابدأ التحدي والمرح مع زملائك!</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 mb-8">
+                    <button onclick="switchGame('game-order')" id="btn-game-order" class="game-nav-btn active-tab px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-down-1-9"></i> لعبة ترتيب الآيات
+                    </button>
+                    <button onclick="switchGame('game-match')" id="btn-game-match" class="game-nav-btn bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-200 transition flex items-center gap-2">
+                        <i class="fa-solid fa-link"></i> لعبة مطابقة المعاني
+                    </button>
+                    <button onclick="switchGame('game-wheel')" id="btn-game-wheel" class="game-nav-btn bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-200 transition flex items-center gap-2">
+                        <i class="fa-solid fa-dharmachakra"></i> عجلة الأسئلة
+                    </button>
+                </div>
+
+                <div id="game-order" class="space-y-6">
+                    <div class="bg-hudayi-50 p-4 rounded-2xl border border-hudayi-200 text-center">
+                        <p class="font-bold text-hudayi-900">تعليمات اللعبة: اضغط على الآيات بالترتيب الصحيح من البداية إلى النهاية!</p>
+                    </div>
+
+                    <div id="order-bank" class="flex flex-wrap gap-3 justify-center min-h-[120px] p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300"></div>
+
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200">
+                        <h4 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-hudayi-600"></i> ترتيبك للآيات:
+                        </h4>
+                        <div id="order-slots" class="space-y-2"></div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center gap-3 pt-4">
+                        <button onclick="resetOrderGame()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl transition">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
+                        </button>
+                        <button onclick="checkOrderGame()" class="bg-hudayi-600 hover:bg-hudayi-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition">
+                            <i class="fa-solid fa-check"></i> التحقق من الإجابة
+                        </button>
+                    </div>
+                </div>
+
+                <div id="game-match" class="hidden space-y-6">
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-center">
+                        <p class="font-bold text-amber-900">تعليمات اللعبة: انقر على الكلمة القرآنية ثم انقر على معناها المناسب لتوصيلهما!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <h4 class="font-extrabold text-hudayi-800 text-center bg-hudayi-100 py-2 rounded-xl">الكلمات القرآنيّة</h4>
+                            <div id="match-words" class="space-y-2"></div>
+                        </div>
+                        <div class="space-y-3">
+                            <h4 class="font-extrabold text-hudayi-800 text-center bg-hudayi-100 py-2 rounded-xl">المعاني والمقصود</h4>
+                            <div id="match-meanings" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center gap-3 pt-4">
+                        <button onclick="resetMatchGame()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl transition">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة الترتيب
+                        </button>
+                        <div id="match-score" class="font-black text-hudayi-700 text-lg">
+                            النقاط: <span id="match-score-num">0</span> / 4
+                        </div>
+                    </div>
+                </div>
+
+                <div id="game-wheel" class="hidden space-y-6 text-center">
+                    <div class="bg-hudayi-50 p-4 rounded-2xl border border-hudayi-200">
+                        <p class="font-bold text-hudayi-900">اضغط على زر "أدر العجلة" للحصول على سؤال تفاعلي، ثم انقر على بطاقة السؤال لكشف الإجابة!</p>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center py-6">
+                        <div class="relative w-64 h-64 md:w-80 md:h-80 my-4">
+                            <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-20 text-3xl text-red-600 drop-shadow-md">
+                                <i class="fa-solid fa-caret-down"></i>
+                            </div>
+                            <canvas id="wheel-canvas" width="320" height="320" class="w-full h-full rounded-full shadow-2xl transition-transform duration-[4000ms]"></canvas>
+                        </div>
+
+                        <button onclick="spinWheel()" id="spin-btn" class="mt-4 bg-accent-gold hover:bg-accent-amber text-slate-950 font-black text-lg px-8 py-3.5 rounded-2xl shadow-xl transition transform hover:scale-105 active:scale-95">
+                            <i class="fa-solid fa-dharmachakra"></i> أدر العجلة الآن!
+                        </button>
+                    </div>
+
+                    <div id="wheel-result" class="hidden bg-white p-6 rounded-3xl border-2 border-hudayi-500 shadow-xl max-w-xl mx-auto space-y-4 cursor-pointer transition transform hover:scale-[1.02]" onclick="toggleWheelAnswer()">
+                        <div class="flex items-center justify-between">
+                            <span class="bg-hudayi-100 text-hudayi-800 text-xs font-bold px-3 py-1 rounded-full">سؤال العجلة العشوائي</span>
+                            <span class="text-xs text-amber-600 font-extrabold flex items-center gap-1 animate-pulse">
+                                <i class="fa-solid fa-hand-pointer"></i> اضغط هنا لكشف الإجابة!
+                            </span>
+                        </div>
+                        <h3 id="wheel-question" class="text-xl font-black text-slate-800 py-2">...</h3>
+
+                        <div id="wheel-answer-box" class="hidden pt-4 border-t-2 border-dashed border-hudayi-200 bg-amber-50/80 p-4 rounded-2xl text-right animate-fadeIn">
+                            <span class="text-xs font-black text-amber-800 block mb-1">
+                                <i class="fa-solid fa-key"></i> الإجابة الصحيحة:
+                            </span>
+                            <p id="wheel-hint" class="text-base font-black text-hudayi-900 leading-relaxed">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="next-stage-nav" data-stage="games"></div>
+        </section>
+
+        <!-- ================= QUIZ SECTION ================= -->
+        <section id="section-quiz" class="hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="text-center max-w-2xl mx-auto mb-6">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full">اختبر نفسك</span>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mt-2">اختبار المعرفة في سورة الفاتحة</h2>
+                    <p class="text-slate-600 text-sm mt-1">أجب على الأسئلة واحصل على وسام التفوق!</p>
+                </div>
+
+                <div id="quiz-container" class="max-w-3xl mx-auto space-y-6">
+                    <div class="flex justify-between items-center">
+                        <span id="quiz-count" class="font-bold text-slate-700 text-sm bg-slate-100 px-3 py-1.5 rounded-full">السؤال 1 من 5</span>
+                        <span id="quiz-score-badge" class="bg-hudayi-100 text-hudayi-800 font-bold px-3 py-1.5 rounded-full text-sm">النقاط: 0</span>
+                    </div>
+
+                    <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                        <div id="quiz-progress" class="bg-hudayi-600 h-3 rounded-full transition-all duration-500" style="width: 20%"></div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-hudayi-50 to-emerald-50 p-6 rounded-2xl border-2 border-hudayi-200">
+                        <h3 id="quiz-question-text" class="text-xl md:text-2xl font-black text-slate-800 leading-relaxed">...</h3>
+                    </div>
+
+                    <div id="quiz-options" class="space-y-3"></div>
+
+                    <div class="flex justify-end pt-2">
+                        <button id="next-quiz-btn" onclick="nextQuestion()" class="hidden bg-hudayi-600 hover:bg-hudayi-700 text-white font-black px-8 py-3 rounded-2xl shadow-md transition flex items-center gap-2">
+                            السؤال التالي <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quiz-result-box" class="hidden text-center py-8 space-y-6">
+                    <div class="w-24 h-24 bg-amber-100 text-accent-gold rounded-full flex items-center justify-center text-5xl mx-auto shadow-inner">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-slate-800">أحسنت يا بطل!</h3>
+                    <p class="text-slate-600 text-lg">حصلت على نتيجة: <span id="final-score" class="font-extrabold text-hudayi-700 text-2xl">0</span> من 5</p>
+
+                    <div class="p-6 bg-hudayi-50 rounded-2xl border border-hudayi-200 max-w-md mx-auto">
+                        <p class="font-bold text-hudayi-900" id="final-feedback">ممتاز! أنت متقن لمعاني سورة الفاتحة وفضائلها.</p>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <button onclick="restartQuiz()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-6 py-3 rounded-2xl transition">
+                            <i class="fa-solid fa-rotate-right"></i> إعادة المسابقة
+                        </button>
+                        <button onclick="tryShowCompletionScreen()" class="bg-hudayi-600 hover:bg-hudayi-700 text-white font-black px-8 py-3 rounded-2xl shadow-lg transition">
+                            <i class="fa-solid fa-certificate"></i> عرض شاشة الوسام والإنجاز
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="next-stage-nav" data-stage="quiz"></div>
+        </section>
+
+        <!-- ================= VIRTUES SECTION ================= -->
+        <section id="section-virtues" class="hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <span class="bg-amber-100 text-amber-800 text-xs font-black px-3 py-1 rounded-full">كنوز السورة</span>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mt-2">فضائل سورة الفاتحة العظيمة</h2>
+                    <p class="text-slate-600 text-sm mt-1">تعرف على المكانة الرفيعة التي حباها الله لسورة الفاتحة في كتابه الكريم</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="bg-gradient-to-br from-hudayi-50 to-white p-6 rounded-2xl border border-hudayi-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-hudayi-600 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-crown"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-hudayi-900 mb-1">أعظم سورة في القرآن</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">قال النبي ﷺ لأبي سعيد بن المعلى: «لأعلمنك أعظم سورة في القرآن» ثم قرأ عليه سورة الفاتحة.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-amber-50 to-white p-6 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-amber-900 mb-1">أم الكتاب والسبع المثاني</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">سُميت بذلك لأنها تُقرأ في كل ركعة من الصلاة، وتُكرَّر في كل صلاة فرض أو نافلة.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-2xl border border-emerald-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-hand-holding-medical"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-emerald-900 mb-1">سورة الشفاء والرقية</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">ورد في السنة أن الفاتحة تُستخدم للرقية الشرعية والشفاء بإذن الله، فهي رقية تامة.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-sky-50 to-white p-6 rounded-2xl border border-sky-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-sky-600 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-key"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-sky-900 mb-1">مفتاح الصلاة والقرآن</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">لا تصح الصلاة بدونها، وهي أول ما يُفتح به المصحف، وهي مناجاة العبد مع ربه في كل ركعة.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-rose-50 to-white p-6 rounded-2xl border border-rose-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-comments"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-rose-900 mb-1">مناجاة بين العبد وربه</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">في الحديث القدسي: «قسمت الصلاة بيني وبين عبدي نصفين» فالفاتحة حوار مباشر مع الله.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-violet-50 to-white p-6 rounded-2xl border border-violet-200 shadow-sm hover:shadow-md transition">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-violet-600 text-white rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-violet-900 mb-1">جمعت معاني القرآن كلها</h3>
+                                <p class="text-sm text-slate-700 leading-relaxed">اشتملت على التوحيد والعبادة والدعاء والإيمان بالبعث، فجمعت مقاصد القرآن الكريم.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-slate-900 text-white p-6 rounded-2xl text-center">
+                    <p class="quran-text text-xl md:text-2xl text-amber-300 font-bold leading-loose">
+                        «وَلَقَدْ آتَيْنَاكَ سَبْعًا مِّنَ الْمَثَانِي وَالْقُرْآنَ الْعَظِيمَ»
+                    </p>
+                    <p class="text-xs text-slate-400 mt-2 font-semibold">سورة الحجر - الآية 87</p>
+                </div>
+            </div>
+
+            <div class="next-stage-nav" data-stage="virtues"></div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-white mt-12 border-t-4 border-hudayi-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white rounded-2xl p-2 shadow-md">
+                        <img src="logo.png" alt="شعار مدرسة هدائي" class="w-12 h-16 object-contain">
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-hudayi-300">مدرسة هدائي ١٠</h3>
+                        <p class="text-xs text-slate-400">منصة التعليم التفاعلي لمادة القرآن الكريم</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center gap-2">
+                    <div class="bg-slate-800/80 border border-slate-700 px-6 py-3 rounded-2xl text-center">
+                        <p class="text-base font-extrabold text-amber-400 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-pen-nib"></i> إعداد المعلمة : أ.صفية فضل أبو الطيف
+                        </p>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-semibold tracking-wide leading-relaxed text-center">
+                        تطوير وتحسين: أَنَــسْ الجَعَلْ
+                        <span class="mx-1 text-slate-600">|</span>
+                        𝑨𝒏𝒂𝒔 𝑨𝒍-𝒋𝒂𝒂𝒍𓂆
+                    </p>
+                </div>
+
+                <div class="text-xs text-slate-400 text-center md:text-left">
+                    <p>جميع الحقوق محفوظة © 2026 - مدرسة هدائي 10 - مادة القرآن الكريم</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= WELCOME MODAL (يظهر عند فتح الموقع لأول مرة) ================= -->
+    <div id="welcome-modal" class="fixed inset-0 z-[55] bg-slate-900/85 backdrop-blur-md hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl border-4 border-hudayi-500 shadow-2xl max-w-xl w-full p-6 md:p-10 text-center relative overflow-hidden animate-fadeIn my-8">
+            <div class="absolute -left-16 -top-16 w-56 h-56 bg-hudayi-100 opacity-50 rounded-full blur-3xl"></div>
+            <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-amber-100 opacity-50 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10 space-y-5">
+                <div class="w-20 h-20 bg-gradient-to-tr from-hudayi-500 to-hudayi-700 rounded-full flex items-center justify-center text-4xl text-white mx-auto shadow-xl ring-8 ring-hudayi-100">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+
+                <span class="bg-hudayi-100 text-hudayi-800 font-extrabold text-xs px-4 py-1.5 rounded-full inline-block border border-hudayi-300">
+                    مدرسة هدائي ١٠ - مادة القرآن الكريم
+                </span>
+
+                <h2 class="text-2xl md:text-3xl font-black text-hudayi-900">سجّل بياناتك يا بطل قبل بدء التعلم!</h2>
+                <p class="text-sm md:text-base text-slate-600 font-semibold leading-relaxed">سعرّفنا باسمك وصفّك وسيتم تسجيل درجاتك في المسابقات التفاعلية.</p>
+
+                <div class="space-y-3 pt-3">
+                    <input type="text" id="welcome-name-input" placeholder="اكتب اسمك الثلاثي..." class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:outline-none focus:ring-2 focus:ring-hudayi-500 focus:border-hudayi-500 font-bold text-sm shadow-sm text-center">
+                    <select id="welcome-grade-input" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:outline-none focus:ring-2 focus:ring-hudayi-500 focus:border-hudayi-500 font-bold text-sm bg-white shadow-sm text-center">
+                        <option value="الصف الرابع">الصف الرابع</option>
+                        <option value="الصف الخامس">الصف الخامس</option>
+                        <option value="الصف السادس">الصف السادس</option>
+                    </select>
+                    <button onclick="saveWelcomeStudent()" class="w-full bg-hudayi-600 hover:bg-hudayi-700 text-white font-extrabold px-6 py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-check-circle"></i> حفظ وبدء الرحلة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= COMPLETION MODAL ================= -->
+    <div id="completion-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl border-4 border-accent-gold shadow-2xl max-w-2xl w-full p-6 md:p-10 text-center relative overflow-hidden animate-fadeIn my-8">
+            <button onclick="closeCompletionScreen()" class="absolute top-4 left-4 text-slate-400 hover:text-slate-700 text-2xl w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center transition touch-target" aria-label="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="relative z-10 space-y-4">
+                <div class="w-24 h-24 bg-gradient-to-tr from-amber-400 to-amber-200 rounded-full flex items-center justify-center text-5xl text-amber-900 mx-auto shadow-xl ring-8 ring-amber-100 animate-bounce">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+
+                <span class="bg-hudayi-100 text-hudayi-800 font-extrabold text-xs px-4 py-1.5 rounded-full inline-block border border-hudayi-300">
+                    مدرسة هدائي ١٠ - مادة القرآن الكريم
+                </span>
+
+                <h2 class="text-3xl md:text-4xl font-black text-hudayi-900">وسام إنجاز سورة الفاتحة 🎓</h2>
+                <p class="text-slate-600 text-sm md:text-base font-semibold">مُبارك لك يا بطل القرآن! لقد أتممت جميع الأنشطة والمهام التعليمية بنجاح واقتدار.</p>
+
+                <div class="bg-gradient-to-r from-hudayi-50 via-amber-50 to-emerald-50 p-6 rounded-2xl border-2 border-hudayi-300 my-6 shadow-sm">
+                    <p class="text-xs text-slate-500 font-bold mb-1">اسم الطالب المبدع:</p>
+                    <h3 id="modal-student-name" class="text-2xl md:text-3xl font-black text-hudayi-800">طالب القرآن المميز</h3>
+                    <p id="modal-student-grade" class="text-sm font-bold text-hudayi-600 mt-1">الصف الرابع</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-right text-xs">
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <div>
+                            <span class="font-bold text-emerald-900 block">التلاوة</span>
+                            <span class="text-slate-500">استماع وتدبر</span>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <div>
+                            <span class="font-bold text-emerald-900 block">ترتيب الآيات</span>
+                            <span class="text-slate-500">إتقان كامل</span>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <div>
+                            <span class="font-bold text-emerald-900 block">معاني الكلمات</span>
+                            <span class="text-slate-500">مطابقة صحيحة</span>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <div>
+                            <span class="font-bold text-emerald-900 block">الاختبار النهائي</span>
+                            <span class="text-slate-500">تفوق باهر</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 text-white p-4 rounded-2xl flex items-center justify-between mt-6 text-right">
+                    <div>
+                        <p class="text-xs text-amber-400 font-bold">معلمة المادة:</p>
+                        <p class="text-base font-black">أ. صفية فضل أبو الطيف</p>
+                    </div>
+                    <div class="w-10 h-10 bg-amber-400 text-slate-900 rounded-full flex items-center justify-center font-bold text-xl">
+                        <i class="fa-solid fa-pen-nib"></i>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex flex-wrap gap-3 justify-center">
+                    <button onclick="confetti({ particleCount: 150, spread: 90 }); playSuccessSound();" class="bg-accent-gold hover:bg-accent-amber text-slate-950 font-black px-6 py-3 rounded-xl shadow-md transition">
+                        <i class="fa-solid fa-star"></i> احتفل ثانيةً! 🚀
+                    </button>
+                    <button onclick="closeCompletionScreen()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-6 py-3 rounded-xl transition">
+                        إغلاق الشاشة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CUSTOM ALERT MODAL ================= -->
+    <div id="custom-modal" class="fixed inset-0 z-[60] bg-slate-900/70 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto" onclick="if(event.target===this) closeCustomModal()">
+        <div id="custom-modal-content" class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 text-center relative animate-fadeIn my-8 border-4" style="border-color: #14b8a6;">
+            <div id="custom-modal-icon" class="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-5"></div>
+            <h3 id="custom-modal-title" class="text-2xl font-black mb-3"></h3>
+            <p id="custom-modal-message" class="text-slate-600 font-semibold leading-relaxed whitespace-pre-line mb-6 text-right"></p>
+            <div id="custom-modal-buttons" class="flex gap-3 justify-center flex-wrap"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GLOBAL STATE ====================
+        let currentStudent = { name: '', grade: 'الصف الرابع' };
+        let audioEl = null;
+        let audioCtx = null;
+
+        let studentProgress = {
+            recitation: false,
+            orderGame: false,
+            matchGame: false,
+            quiz: false
+        };
+
+        // ==================== LOCAL STORAGE ====================
+        const STORAGE_KEYS = {
+            STUDENT: 'fatiha_student_info_v1',
+            PROGRESS: 'fatiha_student_progress_v1'
+        };
+
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.STUDENT, JSON.stringify(currentStudent));
+                localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(studentProgress));
+            } catch (e) {
+                console.log("LocalStorage save error:", e);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const savedStudent = localStorage.getItem(STORAGE_KEYS.STUDENT);
+                const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+
+                if (savedStudent) {
+                    const parsed = JSON.parse(savedStudent);
+                    if (parsed && parsed.name) {
+                        currentStudent.name = parsed.name;
+                        currentStudent.grade = parsed.grade || 'الصف الرابع';
+
+                        const form = document.getElementById('student-form');
+                        const badge = document.getElementById('student-welcome-badge');
+                        if (form) form.classList.add('hidden');
+                        if (badge) badge.classList.remove('hidden');
+
+                        const nameEl = document.getElementById('display-student-name');
+                        const gradeEl = document.getElementById('display-student-grade');
+                        if (nameEl) nameEl.innerText = currentStudent.name;
+                        if (gradeEl) gradeEl.innerText = currentStudent.grade;
+
+                        const nameInput = document.getElementById('student-name-input');
+                        const gradeInput = document.getElementById('student-grade-input');
+                        if (nameInput) nameInput.value = currentStudent.name;
+                        if (gradeInput) gradeInput.value = currentStudent.grade;
+                    }
+                }
+
+                if (savedProgress) {
+                    const parsed = JSON.parse(savedProgress);
+                    if (parsed && typeof parsed === 'object') {
+                        studentProgress = { ...studentProgress, ...parsed };
+                    }
+                }
+            } catch (e) {
+                console.log("LocalStorage load error:", e);
+            }
+        }
+
+        function resetAllProgress() {
+            showCustomModal({
+                type: 'warning',
+                title: 'تأكيد إعادة التعيين',
+                message: 'هل أنت متأكد من رغبتك في مسح جميع البيانات والتقدم؟\n\n⚠️ لا يمكن التراجع عن هذا الإجراء!',
+                icon: 'fa-triangle-exclamation',
+                buttons: [
+                    {
+                        text: 'نعم، امسح الكل',
+                        style: 'primary',
+                        onClick: () => {
+                            try {
+                                localStorage.removeItem(STORAGE_KEYS.STUDENT);
+                                localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+                            } catch (e) {}
+                            location.reload();
+                        }
+                    },
+                    { text: 'إلغاء', style: 'secondary' }
+                ]
+            });
+        }
+
+        // ==================== VERSES DATA ====================
+        const versesData = [
+            {
+                number: 1,
+                text: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                tafsir: "أبدأ قراءتي مستعيناً باسم الله، مستبركاً بذكره، وهو الرحمن الرحيم ذو الرحمة الواسعة.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001001.mp3"
+            },
+            {
+                number: 2,
+                text: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+                tafsir: "الثناء والحمد لله وحده مالك وخالق جميع المخلوقات والعوالم.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001002.mp3"
+            },
+            {
+                number: 3,
+                text: "الرَّحْمَٰنِ الرَّحِيمِ",
+                tafsir: "الذي اتصف بالرحمة الواسعة الدائمة لجميع عباده.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001003.mp3"
+            },
+            {
+                number: 4,
+                text: "مَالِكِ يَوْمِ الدِّينِ",
+                tafsir: "المتصرف والمحيط بأمر يوم القيامة ويوم الحساب والجزاء.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001004.mp3"
+            },
+            {
+                number: 5,
+                text: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+                tafsir: "نخصك وحدك بالعبادة ونستعين بك وحدك في كل أمورنا.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001005.mp3"
+            },
+            {
+                number: 6,
+                text: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+                tafsir: "وفقنا وأرشدنا وثبتنا على الطريق الحق وهو الإسلام.",
+                audio: "https://everyayah.com/data/Husary_128kbps/001006.mp3"
+            },
+            {
+                number: 7,
+                text: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+                tafsir: "طريق الأنبياء والصالحين، غير طريق المغضوب عليهم (من علم الحق ولم يعمل به) ولا الضالين (من ترك الحق عن جهل).",
+                audio: "https://everyayah.com/data/Husary_128kbps/001007.mp3"
+            }
+        ];
+
+        // ==================== CUSTOM MODAL SYSTEM ====================
+        function showCustomModal({ title, message, type = 'info', buttons, icon }) {
+            const modal = document.getElementById('custom-modal');
+            const content = document.getElementById('custom-modal-content');
+            const iconEl = document.getElementById('custom-modal-icon');
+            const titleEl = document.getElementById('custom-modal-title');
+            const msgEl = document.getElementById('custom-modal-message');
+            const btnsEl = document.getElementById('custom-modal-buttons');
+            if (!modal) return;
+
+            const configs = {
+                info:    { border: '#14b8a6', bg: '#ccfbf1', color: '#0f766e', btnBg: '#0d9488', icon: 'fa-circle-info' },
+                success: { border: '#10b981', bg: '#d1fae5', color: '#047857', btnBg: '#10b981', icon: 'fa-circle-check' },
+                error:   { border: '#ef4444', bg: '#fee2e2', color: '#b91c1c', btnBg: '#ef4444', icon: 'fa-circle-xmark' },
+                warning: { border: '#f59e0b', bg: '#fef3c7', color: '#b45309', btnBg: '#f59e0b', icon: 'fa-triangle-exclamation' },
+                lock:    { border: '#64748b', bg: '#e2e8f0', color: '#334155', btnBg: '#475569', icon: 'fa-lock' }
+            };
+            const cfg = configs[type] || configs.info;
+
+            content.style.borderColor = cfg.border;
+            iconEl.style.backgroundColor = cfg.bg;
+            iconEl.style.color = cfg.color;
+            iconEl.innerHTML = `<i class="fa-solid ${icon || cfg.icon}"></i>`;
+
+            titleEl.style.color = cfg.color;
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+
+            btnsEl.innerHTML = '';
+            (buttons || [{ text: 'حسناً', style: 'primary' }]).forEach(btn => {
+                const b = document.createElement('button');
+                if (btn.style === 'secondary') {
+                    b.className = "bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-6 py-3 rounded-2xl transition";
+                } else {
+                    b.className = "text-white font-black px-6 py-3 rounded-2xl shadow-md transition hover:opacity-90";
+                    b.style.backgroundColor = cfg.btnBg;
+                }
+                b.innerText = btn.text;
+                b.onclick = () => { closeCustomModal(); if (btn.onClick) btn.onClick(); };
+                btnsEl.appendChild(b);
+            });
+
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                const firstBtn = btnsEl.querySelector('button');
+                if (firstBtn) firstBtn.focus();
+            }, 100);
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('custom-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // ==================== WELCOME MODAL ====================
+        function showWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    const inp = document.getElementById('welcome-name-input');
+                    if (inp) inp.focus();
+                }, 300);
+            }
+        }
+
+        function hideWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function saveWelcomeStudent() {
+            const nameInput = document.getElementById('welcome-name-input').value.trim();
+            const gradeInput = document.getElementById('welcome-grade-input').value;
+
+            if (!nameInput) {
+                showCustomModal({
+                    type: 'warning',
+                    title: 'تنبيه',
+                    message: 'يرجى كتابة اسمك الثلاثي يا بطل!'
+                });
+                return;
+            }
+
+            currentStudent.name = nameInput;
+            currentStudent.grade = gradeInput;
+
+            const form = document.getElementById('student-form');
+            const badge = document.getElementById('student-welcome-badge');
+            if (form) form.classList.add('hidden');
+            if (badge) badge.classList.remove('hidden');
+
+            const nameEl = document.getElementById('display-student-name');
+            const gradeEl = document.getElementById('display-student-grade');
+            if (nameEl) nameEl.innerText = currentStudent.name;
+            if (gradeEl) gradeEl.innerText = currentStudent.grade;
+
+            const nameMainInput = document.getElementById('student-name-input');
+            const gradeMainInput = document.getElementById('student-grade-input');
+            if (nameMainInput) nameMainInput.value = currentStudent.name;
+            if (gradeMainInput) gradeMainInput.value = currentStudent.grade;
+
+            saveToStorage();
+            hideWelcomeModal();
+
+            playSuccessSound();
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.4 } });
+            speakText(`مرحباً بك يا بطل القرآن ${currentStudent.name}`);
+        }
+
+        // ==================== NAVIGATION ====================
+        function switchTab(tabId) {
+            const sections = ['home', 'recitation', 'games', 'quiz', 'virtues'];
+            sections.forEach(s => {
+                const secEl = document.getElementById(`section-${s}`);
+                const tabEl = document.getElementById(`tab-${s}`);
+                if (secEl) secEl.classList.add('hidden');
+                if (tabEl) {
+                    tabEl.classList.remove('active-tab');
+                    tabEl.classList.add('text-slate-600');
+                }
+            });
+
+            const activeSection = document.getElementById(`section-${tabId}`);
+            const activeTab = document.getElementById(`tab-${tabId}`);
+
+            if (activeSection) activeSection.classList.remove('hidden');
+            if (activeTab) {
+                activeTab.classList.add('active-tab');
+                activeTab.classList.remove('text-slate-600');
+            }
+
+            if (tabId === 'games') {
+                switchGame('game-order');
+            } else if (tabId === 'quiz') {
+                initQuiz();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // ==================== STUDENT INFO ====================
+        function saveStudentInfo() {
+            const nameInput = document.getElementById('student-name-input').value.trim();
+            const gradeInput = document.getElementById('student-grade-input').value;
+
+            if (!nameInput) {
+                showCustomModal({
+                    type: 'warning',
+                    title: 'تنبيه',
+                    message: 'يرجى كتابة اسمك الثلاثي يا بطل!'
+                });
+                return;
+            }
+
+            currentStudent.name = nameInput;
+            currentStudent.grade = gradeInput;
+
+            document.getElementById('student-form').classList.add('hidden');
+            document.getElementById('student-welcome-badge').classList.remove('hidden');
+
+            document.getElementById('display-student-name').innerText = currentStudent.name;
+            document.getElementById('display-student-grade').innerText = currentStudent.grade;
+
+            saveToStorage();
+
+            playSuccessSound();
+            speakText(`مرحباً بك يا بطل القرآن ${currentStudent.name}`);
+        }
+
+        function editStudentInfo() {
+            document.getElementById('student-form').classList.remove('hidden');
+            document.getElementById('student-welcome-badge').classList.add('hidden');
+        }
+
+        // ==================== PROGRESS TRACKING ====================
+        function updateProgressUI() {
+            const total = 4;
+            const completed = Object.values(studentProgress).filter(v => v).length;
+
+            const btn = document.getElementById('complete-btn');
+            const btnMobile = document.getElementById('complete-btn-mobile');
+
+            if (btn) {
+                if (completed === total) {
+                    btn.className = "bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 flex items-center gap-2 shadow-md animate-bounce cursor-pointer";
+                    btn.innerHTML = '<i class="fa-solid fa-trophy"></i> إنهاء وإنجاز 🏆';
+                } else {
+                    btn.className = "bg-slate-300 text-slate-600 px-4 py-2 rounded-xl text-sm font-black transition-all duration-200 flex items-center gap-2 shadow-md cursor-not-allowed";
+                    btn.innerHTML = `<i class="fa-solid fa-lock"></i> <span id="complete-btn-text">المهام: ${completed}/${total}</span>`;
+                }
+            }
+
+            if (btnMobile) {
+                if (completed === total) {
+                    btnMobile.className = "w-full text-right px-4 py-2 rounded-lg font-black text-amber-900 bg-amber-200 hover:bg-amber-300";
+                    btnMobile.innerHTML = "🏆 عرض شاشة الإنجاز والوسام";
+                } else {
+                    btnMobile.className = "w-full text-right px-4 py-2 rounded-lg font-black text-slate-600 bg-slate-200 cursor-not-allowed";
+                    btnMobile.innerHTML = `🔒 المهام: ${completed}/${total} - أكمل الأنشطة أولاً`;
+                }
+            }
+
+            const counter = document.getElementById('progress-counter');
+            if (counter) counter.innerText = `${completed} / ${total}`;
+
+            const tasks = {
+                recitation: 'task-recitation',
+                orderGame: 'task-orderGame',
+                matchGame: 'task-matchGame',
+                quiz: 'task-quiz'
+            };
+
+            Object.entries(tasks).forEach(([key, id]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const status = el.querySelector('.task-status');
+                if (studentProgress[key]) {
+                    el.className = "task-chip bg-emerald-50 border-2 border-emerald-400 p-3 rounded-2xl text-center";
+                    el.querySelector('i').className = el.querySelector('i').className.replace('text-slate-400', 'text-emerald-600');
+                    if (status) {
+                        status.className = "task-status text-xs font-black text-emerald-700 block mt-1";
+                        status.innerText = "✓ مكتملة";
+                    }
+                } else {
+                    el.className = "task-chip bg-slate-100 border-2 border-slate-200 p-3 rounded-2xl text-center";
+                    el.querySelector('i').className = el.querySelector('i').className.replace('text-emerald-600', 'text-slate-400');
+                    if (status) {
+                        status.className = "task-status text-xs font-black text-slate-400 block mt-1";
+                        status.innerText = "لم تكتمل";
+                    }
+                }
+            });
+
+            if (typeof updateAllNextStageNavs === 'function') {
+                updateAllNextStageNavs();
+            }
+        }
+
+        function markProgress(task) {
+            if (studentProgress[task] === false) {
+                studentProgress[task] = true;
+                updateProgressUI();
+                updateAllNextStageNavs();
+                saveToStorage();
+
+                const completed = Object.values(studentProgress).filter(v => v).length;
+                if (completed === 4) {
+                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                    speakText("رائع! لقد أكملت جميع المهام، يمكنك الآن الحصول على وسام الإنجاز!");
+                }
+            }
+        }
+
+        function tryShowCompletionScreen() {
+            const total = 4;
+            const completed = Object.values(studentProgress).filter(v => v).length;
+
+            if (completed === total) {
+                showCompletionScreen();
+                return;
+            }
+
+            const missing = [];
+            if (!studentProgress.recitation) missing.push("🎧 الاستماع للسورة كاملة");
+            if (!studentProgress.orderGame) missing.push("🔢 حل لعبة ترتيب الآيات");
+            if (!studentProgress.matchGame) missing.push("🔗 إتمام لعبة مطابقة المعاني");
+            if (!studentProgress.quiz) missing.push("🏆 النجاح في اختبار المعرفة (4/5 على الأقل)");
+
+            showCustomModal({
+                type: 'lock',
+                title: 'لم تكمل جميع المهام بعد!',
+                icon: 'fa-lock',
+                message: `🎯 المهام المتبقية (${completed}/4):\n\n${missing.join('\n')}\n\nأكملها أولاً ثم عد للحصول على وسامك 🏅`
+            });
+        }
+
+        // ==================== NEXT STAGE NAVIGATOR ====================
+        const stageConfig = {
+            home: {
+                target: 'recitation',
+                targetName: 'التلاوة والتفسير',
+                icon: 'fa-book-quran',
+                condition: () => true,
+                lockedMsg: 'ابدأ رحلتك التعليمية'
+            },
+            recitation: {
+                target: 'games',
+                targetName: 'الألعاب التفاعلية',
+                icon: 'fa-gamepad',
+                condition: () => studentProgress.recitation,
+                lockedMsg: 'استمع للسورة كاملة لفتح المرحلة التالية'
+            },
+            games: {
+                target: 'quiz',
+                targetName: 'اختبار المعرفة',
+                icon: 'fa-award',
+                condition: () => studentProgress.orderGame && studentProgress.matchGame,
+                lockedMsg: 'أكمل لعبة الترتيب والمطابقة لفتح الاختبار'
+            },
+            quiz: {
+                target: 'virtues',
+                targetName: 'فضائل السورة',
+                icon: 'fa-star',
+                condition: () => studentProgress.quiz,
+                lockedMsg: 'احصل على 4/5 في الاختبار على الأقل'
+            },
+            virtues: {
+                target: 'complete',
+                targetName: 'الوسام والإنجاز',
+                icon: 'fa-trophy',
+                condition: () => Object.values(studentProgress).every(v => v),
+                lockedMsg: 'أكمل جميع المهام للحصول على الوسام'
+            }
+        };
+
+        function renderNextStageNav(stageKey) {
+            const container = document.querySelector(`.next-stage-nav[data-stage="${stageKey}"]`);
+            if (!container) return;
+            const config = stageConfig[stageKey];
+            if (!config) return;
+
+            const isActive = config.condition();
+
+            if (isActive) {
+                // Special text for home stage (start of journey)
+                const isHome = stageKey === 'home';
+                const titleText = isHome ? '🚀 هيا بنا نبدأ الرحلة!' : '🎉 أحسنت! أكملت هذه المرحلة';
+                const subtitleText = isHome ? 'ابدأ رحلتك التعليمية مع سورة الفاتحة' : 'هيا بنا إلى المرحلة التالية';
+                const iconClass = isHome ? 'fa-rocket' : 'fa-circle-check';
+                const iconBg = isHome ? 'bg-hudayi-500' : 'bg-emerald-500';
+                const titleColor = isHome ? 'text-hudayi-700' : 'text-emerald-700';
+
+                container.innerHTML = `
+                    <div class="bg-gradient-to-r from-emerald-50 via-hudayi-50 to-amber-50 rounded-3xl p-6 border-2 border-hudayi-400 shadow-md animate-fadeIn">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 ${iconBg} text-white rounded-full flex items-center justify-center text-2xl shadow-lg shrink-0">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-base font-black ${titleColor}">${titleText}</p>
+                                    <p class="text-xs text-slate-600 font-semibold">${subtitleText}</p>
+                                </div>
+                            </div>
+                            <button onclick="goToNextStage('${config.target}')"
+                                class="bg-hudayi-600 hover:bg-hudayi-700 text-white font-black px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-sm transform hover:scale-105 transition">
+                                <i class="fa-solid ${config.icon}"></i>
+                                <span>${config.targetName}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="bg-slate-50 rounded-3xl p-6 border-2 border-dashed border-slate-300">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-xl shrink-0">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-base font-black text-slate-600">المرحلة التالية مُقفلة</p>
+                                    <p class="text-xs text-slate-500 font-semibold">${config.lockedMsg}</p>
+                                </div>
+                            </div>
+                            <button disabled
+                                class="bg-slate-200 text-slate-400 font-black px-6 py-3.5 rounded-2xl cursor-not-allowed flex items-center gap-3 text-sm">
+                                <i class="fa-solid ${config.icon}"></i>
+                                <span>${config.targetName}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function goToNextStage(target) {
+            playSuccessSound();
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 } });
+
+            if (target === 'complete') {
+                setTimeout(() => showCompletionScreen(), 500);
+                return;
+            }
+
+            setTimeout(() => switchTab(target), 400);
+        }
+
+        function updateAllNextStageNavs() {
+            Object.keys(stageConfig).forEach(renderNextStageNav);
+        }
+
+        // ==================== AUDIO UTILITIES ====================
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+        function initAudioContext() {
+            try {
+                if (!audioCtx && AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (e) { console.log("AudioContext init error:", e); }
+        }
+
+        function playSuccessSound() {
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.1);
+                    osc.stop(now + idx * 0.1 + 0.3);
+                });
+            } catch (e) { console.log("SFX error:", e); }
+        }
+
+        function playErrorSound() {
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(130, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) { console.log("SFX error:", e); }
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'ar-SA';
+                msg.rate = 0.95;
+                window.speechSynthesis.speak(msg);
+            } catch (e) { console.log("TTS error:", e); }
+        }
+
+        // ==================== RECITATION PLAYER ====================
+        let isPlayingFullSequence = false;
+        let sequenceIndex = 0;
+        let currentPlayingIndex = null;
+
+        function renderVerses() {
+            const container = document.getElementById('verses-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            versesData.forEach((verse, idx) => {
+                const card = document.createElement('div');
+                card.id = `verse-card-${idx}`;
+                card.className = "bg-slate-50 p-6 rounded-2xl border border-slate-200 transition-all duration-300 hover:shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+
+                card.innerHTML = `
+                    <div class="space-y-2 flex-grow">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 bg-hudayi-600 text-white font-extrabold rounded-full flex items-center justify-center text-sm shadow-sm shrink-0">${verse.number}</span>
+                            <p class="quran-text text-2xl md:text-3xl text-slate-800 font-bold">${verse.text}</p>
+                        </div>
+                        <p class="text-xs md:text-sm text-slate-600 pr-11 font-medium"><span class="font-extrabold text-hudayi-700">التفسير:</span> ${verse.tafsir}</p>
+                    </div>
+                    <button onclick="playVerse(${idx})" class="shrink-0 bg-hudayi-100 hover:bg-hudayi-600 text-hudayi-800 hover:text-white px-4 py-2.5 rounded-xl font-bold transition flex items-center gap-2 text-sm shadow-sm">
+                        <i class="fa-solid fa-play" id="play-icon-${idx}"></i> استماع للآية
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function playVerse(idx) {
+            initAudioContext();
+            isPlayingFullSequence = false;
+
+            if (currentPlayingIndex === idx && !audioEl.paused) {
+                audioEl.pause();
+                resetAudioUI();
+                return;
+            }
+
+            resetAudioUI();
+            currentPlayingIndex = idx;
+            audioEl.src = versesData[idx].audio;
+            audioEl.play().catch(e => console.log("Playback error:", e));
+
+            const card = document.getElementById(`verse-card-${idx}`);
+            if (card) card.classList.add('bg-hudayi-50', 'border-hudayi-500', 'ring-2', 'ring-hudayi-400');
+
+            const btnIcon = document.getElementById(`play-icon-${idx}`);
+            if (btnIcon) btnIcon.className = 'fa-solid fa-pause';
+        }
+
+        function playFullSurah() {
+            initAudioContext();
+            resetAudioUI();
+            isPlayingFullSequence = true;
+            sequenceIndex = 0;
+            playVerseSequence(0);
+
+            document.getElementById('main-play-icon').className = 'fa-solid fa-pause';
+            document.getElementById('main-play-text').innerText = 'جاري تلاوة السورة كاملة...';
+        }
+
+        function playVerseSequence(index) {
+            if (index >= versesData.length) {
+                resetAudioUI();
+                isPlayingFullSequence = false;
+                playSuccessSound();
+                speakText("تقبل الله تلاوتك يا بطل");
+                markProgress('recitation');
+                return;
+            }
+
+            currentPlayingIndex = index;
+            resetAudioUIVisualsOnly();
+
+            audioEl.src = versesData[index].audio;
+            audioEl.play().catch(e => console.log("Sequence playback error:", e));
+
+            const card = document.getElementById(`verse-card-${index}`);
+            if (card) {
+                card.classList.add('bg-hudayi-50', 'border-hudayi-500', 'ring-2', 'ring-hudayi-400');
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            const btnIcon = document.getElementById(`play-icon-${index}`);
+            if (btnIcon) btnIcon.className = 'fa-solid fa-pause';
+        }
+
+        function pauseAudio() {
+            if (audioEl) audioEl.pause();
+            isPlayingFullSequence = false;
+            resetAudioUI();
+        }
+
+        function resetAudioUIVisualsOnly() {
+            versesData.forEach((_, idx) => {
+                const card = document.getElementById(`verse-card-${idx}`);
+                if (card) card.classList.remove('bg-hudayi-50', 'border-hudayi-500', 'ring-2', 'ring-hudayi-400');
+                const btnIcon = document.getElementById(`play-icon-${idx}`);
+                if (btnIcon) btnIcon.className = 'fa-solid fa-play';
+            });
+        }
+
+        function resetAudioUI() {
+            resetAudioUIVisualsOnly();
+            currentPlayingIndex = null;
+            const mainIcon = document.getElementById('main-play-icon');
+            const mainText = document.getElementById('main-play-text');
+            if (mainIcon) mainIcon.className = 'fa-solid fa-play';
+            if (mainText) mainText.innerText = 'سماع سورة الفاتحة كاملة';
+        }
+
+        // ==================== ORDER GAME ====================
+        let shuffledVerses = [];
+        let selectedVersesOrder = [];
+
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function initOrderGame() {
+            shuffledVerses = shuffleArray(versesData);
+            selectedVersesOrder = [];
+            renderOrderGame();
+        }
+
+        function renderOrderGame() {
+            const bank = document.getElementById('order-bank');
+            const slots = document.getElementById('order-slots');
+            if (!bank || !slots) return;
+
+            bank.innerHTML = '';
+            slots.innerHTML = '';
+
+            if (shuffledVerses.length === 0) {
+                bank.innerHTML = `<p class="text-xs text-slate-400 font-semibold py-4">لقد اخترت جميع الآيات، رتبها بالأسفل ثم اضغط تحقق.</p>`;
+            } else {
+                shuffledVerses.forEach((verse, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-white hover:bg-hudayi-50 text-slate-800 font-bold px-4 py-2.5 rounded-xl border border-slate-300 shadow-sm transition text-sm flex items-center gap-2 max-w-full";
+                    btn.innerHTML = `<i class="fa-solid fa-hand-pointer text-hudayi-600"></i> <span class="quran-text text-lg">${verse.text}</span>`;
+                    btn.onclick = () => selectVerseForOrder(idx);
+                    bank.appendChild(btn);
+                });
+            }
+
+            if (selectedVersesOrder.length === 0) {
+                slots.innerHTML = `<p class="text-xs text-slate-400 font-semibold text-center py-2">لم تقم باختيار أي آية بعد، انقر على الآيات أعلاه لترتيبها هنا.</p>`;
+            } else {
+                selectedVersesOrder.forEach((verse, idx) => {
+                    const row = document.createElement('div');
+                    row.className = "bg-hudayi-50 border border-hudayi-300 p-3 rounded-xl flex items-center justify-between font-bold text-slate-800 text-sm shadow-sm gap-3";
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 flex-grow">
+                            <span class="w-6 h-6 bg-hudayi-600 text-white rounded-full flex items-center justify-center text-xs font-black shrink-0">${idx + 1}</span>
+                            <span class="quran-text text-lg">${verse.text}</span>
+                        </div>
+                        <button onclick="removeVerseFromOrder(${idx})" class="text-red-500 hover:text-red-700 text-xs p-1 shrink-0" aria-label="إزالة">
+                            <i class="fa-solid fa-trash-can"></i> إزالة
+                        </button>
+                    `;
+                    slots.appendChild(row);
+                });
+            }
+        }
+
+        function selectVerseForOrder(index) {
+            const chosen = shuffledVerses.splice(index, 1)[0];
+            selectedVersesOrder.push(chosen);
+            renderOrderGame();
+        }
+
+        function removeVerseFromOrder(index) {
+            const removed = selectedVersesOrder.splice(index, 1)[0];
+            shuffledVerses.push(removed);
+            renderOrderGame();
+        }
+
+        function checkOrderGame() {
+            if (selectedVersesOrder.length < versesData.length) {
+                playErrorSound();
+                showCustomModal({
+                    type: 'warning',
+                    title: 'تنبيه',
+                    message: 'يرجى اختيار جميع الآيات أولاً يا بطل!'
+                });
+                return;
+            }
+
+            let allCorrect = true;
+            const wrongIndexes = [];
+
+            for (let i = 0; i < versesData.length; i++) {
+                if (selectedVersesOrder[i].number !== versesData[i].number) {
+                    allCorrect = false;
+                    wrongIndexes.push(i);
+                }
+            }
+
+            const rows = document.querySelectorAll('#order-slots > div');
+            rows.forEach((row, i) => {
+                row.classList.remove('verse-wrong', 'verse-correct');
+                if (wrongIndexes.includes(i)) {
+                    row.classList.add('verse-wrong');
+                } else {
+                    row.classList.add('verse-correct');
+                }
+            });
+
+            const studentGreeting = currentStudent.name ? `يا بطل القرآن ${currentStudent.name}` : "يا بطل";
+            if (allCorrect) {
+                playSuccessSound();
+                markProgress('orderGame');
+                speakText(`أحسنت وبارك الله فيك ${studentGreeting}! ترتيبك للآيات صحيح تماماً.`);
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                showCustomModal({
+                    type: 'success',
+                    title: 'أحسنت! 🎉',
+                    message: `ممتاز بارك الله فيك ${studentGreeting}!\n\nترتيبك للآيات صحيح 100% ✨`
+                });
+            } else {
+                playErrorSound();
+                speakText("هناك بعض الأخطاء في الترتيب، حاول مرة أخرى يا شاطر");
+                showCustomModal({
+                    type: 'error',
+                    title: 'حاول مرة أخرى 💪',
+                    message: `هناك ${wrongIndexes.length} خطأ في الترتيب (مظللة بالأحمر).\n\nحاول مرة أخرى وستصل للنتيجة الكاملة!`
+                });
+            }
+        }
+
+        function resetOrderGame() {
+            initOrderGame();
+        }
+
+        // ==================== MATCH GAME ====================
+        const matchPairs = [
+            { id: 1, word: "الْحَمْدُ لِلَّهِ", meaning: "الثناء الشامل الكامل لله تعالى وحده" },
+            { id: 2, word: "رَبِّ الْعَالَمِينَ", meaning: "خالق ومالك ومربي جميع المخلوقات" },
+            { id: 3, word: "الصِّرَاطَ الْمُسْتَقِيمَ", meaning: "الطريق الحق الواضح وهو دين الإسلام" },
+            { id: 4, word: "يَوْمِ الدِّينِ", meaning: "يوم القيامة والحساب والجزاء" }
+        ];
+
+        let selectedWord = null;
+        let selectedMeaning = null;
+        let matchScore = 0;
+
+        function initMatchGame() {
+            matchScore = 0;
+            selectedWord = null;
+            selectedMeaning = null;
+            const scoreEl = document.getElementById('match-score-num');
+            if (scoreEl) scoreEl.innerText = 0;
+
+            const wordsCol = document.getElementById('match-words');
+            const meaningsCol = document.getElementById('match-meanings');
+            if (!wordsCol || !meaningsCol) return;
+
+            wordsCol.innerHTML = '';
+            meaningsCol.innerHTML = '';
+
+            const shuffledWords = shuffleArray(matchPairs);
+            const shuffledMeanings = shuffleArray(matchPairs);
+
+            shuffledWords.forEach(pair => {
+                const btn = document.createElement('button');
+                btn.id = `match-word-${pair.id}`;
+                btn.className = "w-full text-right p-3 rounded-xl bg-white border border-slate-300 font-bold text-slate-800 hover:border-hudayi-500 transition shadow-sm text-sm";
+                btn.innerText = pair.word;
+                btn.onclick = () => selectMatchWord(pair.id);
+                wordsCol.appendChild(btn);
+            });
+
+            shuffledMeanings.forEach(pair => {
+                const btn = document.createElement('button');
+                btn.id = `match-meaning-${pair.id}`;
+                btn.className = "w-full text-right p-3 rounded-xl bg-white border border-slate-300 font-semibold text-slate-700 hover:border-hudayi-500 transition shadow-sm text-xs md:text-sm";
+                btn.innerText = pair.meaning;
+                btn.onclick = () => selectMatchMeaning(pair.id);
+                meaningsCol.appendChild(btn);
+            });
+        }
+
+        function selectMatchWord(id) {
+            matchPairs.forEach(p => {
+                const el = document.getElementById(`match-word-${p.id}`);
+                if (el && !el.disabled) el.classList.remove('ring-2', 'ring-hudayi-500', 'bg-hudayi-50');
+            });
+            selectedWord = id;
+            const target = document.getElementById(`match-word-${id}`);
+            if (target) target.classList.add('ring-2', 'ring-hudayi-500', 'bg-hudayi-50');
+            checkMatchPair();
+        }
+
+        function selectMatchMeaning(id) {
+            matchPairs.forEach(p => {
+                const el = document.getElementById(`match-meaning-${p.id}`);
+                if (el && !el.disabled) el.classList.remove('ring-2', 'ring-hudayi-500', 'bg-hudayi-50');
+            });
+            selectedMeaning = id;
+            const target = document.getElementById(`match-meaning-${id}`);
+            if (target) target.classList.add('ring-2', 'ring-hudayi-500', 'bg-hudayi-50');
+            checkMatchPair();
+        }
+
+        function checkMatchPair() {
+            if (selectedWord && selectedMeaning) {
+                if (selectedWord === selectedMeaning) {
+                    playSuccessSound();
+                    const wordBtn = document.getElementById(`match-word-${selectedWord}`);
+                    const meaningBtn = document.getElementById(`match-meaning-${selectedMeaning}`);
+
+                    wordBtn.className = "w-full text-right p-3 rounded-xl bg-emerald-100 border border-emerald-400 font-bold text-emerald-900 cursor-default opacity-80";
+                    meaningBtn.className = "w-full text-right p-3 rounded-xl bg-emerald-100 border border-emerald-400 font-semibold text-emerald-900 cursor-default opacity-80";
+                    wordBtn.onclick = null;
+                    meaningBtn.onclick = null;
+
+                    matchScore++;
+                    document.getElementById('match-score-num').innerText = matchScore;
+
+                    if (matchScore === matchPairs.length) {
+                        confetti({ particleCount: 80, spread: 60 });
+                        markProgress('matchGame');
+                        speakText("ممتاز جداً! لقد طابقت جميع الكلمات بمعانيها الصحيحة!");
+                    }
+                } else {
+                    playErrorSound();
+                }
+                selectedWord = null;
+                selectedMeaning = null;
+            }
+        }
+
+        function resetMatchGame() {
+            initMatchGame();
+        }
+
+        // ==================== WHEEL GAME ====================
+        const wheelQuestions = [
+            { q: "كم عدد آيات سورة الفاتحة؟", a: "7 آيات (والبسملة أولها في رواية حفص)" },
+            { q: "ما معنى (الصراط المستقيم)؟", a: "دين الإسلام والطريق الحق" },
+            { q: "ما معنى (يوم الدين)؟", a: "يوم القيامة والحساب والجزاء" },
+            { q: "اذكر اسماً آخر لسورة الفاتحة؟", a: "أم الكتاب أو السبع المثاني أو الشافية" },
+            { q: "ما حكم قراءة سورة الفاتحة في الصلاة؟", a: "ركن أساسي لا تصح الصلاة بدونها" },
+            { q: "من هم (المغضوب عليهم)؟", a: "من عرفوا الحق ولم يعملوا به" }
+        ];
+
+        let wheelRotation = 0;
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numSlices = wheelQuestions.length;
+            const anglePerSlice = (2 * Math.PI) / numSlices;
+            const colors = ['#0d9488', '#14b8a6', '#f59e0b', '#0f766e', '#1ab394', '#d97706'];
+
+            ctx.clearRect(0, 0, 320, 320);
+
+            for (let i = 0; i < numSlices; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(160, 160);
+                ctx.arc(160, 160, 150, i * anglePerSlice, (i + 1) * anglePerSlice);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(160, 160);
+                ctx.rotate(i * anglePerSlice + anglePerSlice / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 14px Cairo";
+                ctx.textAlign = "right";
+                ctx.fillText(`سؤال ${i + 1}`, 130, 5);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            initAudioContext();
+            const canvas = document.getElementById('wheel-canvas');
+            const spinBtn = document.getElementById('spin-btn');
+            if (!canvas || !spinBtn) return;
+
+            spinBtn.disabled = true;
+            const randomDegree = Math.floor(Math.random() * 360) + 1440;
+            wheelRotation += randomDegree;
+            canvas.style.transform = `rotate(${wheelRotation}deg)`;
+
+            setTimeout(() => {
+                spinBtn.disabled = false;
+                const normalized = (wheelRotation % 360);
+                const sliceDegree = 360 / wheelQuestions.length;
+                const selectedIndex = Math.floor((360 - (normalized % 360)) / sliceDegree) % wheelQuestions.length;
+
+                const resBox = document.getElementById('wheel-result');
+                resBox.classList.remove('hidden');
+                document.getElementById('wheel-question').innerText = wheelQuestions[selectedIndex].q;
+                document.getElementById('wheel-hint').innerText = wheelQuestions[selectedIndex].a;
+
+                const answerBox = document.getElementById('wheel-answer-box');
+                if (answerBox) answerBox.classList.add('hidden');
+
+                playSuccessSound();
+            }, 4000);
+        }
+
+        function toggleWheelAnswer() {
+            const answerBox = document.getElementById('wheel-answer-box');
+            if (!answerBox) return;
+            if (answerBox.classList.contains('hidden')) {
+                answerBox.classList.remove('hidden');
+                playSuccessSound();
+                confetti({ particleCount: 40, spread: 60 });
+            } else {
+                answerBox.classList.add('hidden');
+            }
+        }
+
+        // ==================== COMPLETION SCREEN ====================
+        function showCompletionScreen() {
+            const modal = document.getElementById('completion-modal');
+            const nameDisplay = document.getElementById('modal-student-name');
+            const gradeDisplay = document.getElementById('modal-student-grade');
+
+            if (nameDisplay) nameDisplay.innerText = currentStudent.name || "طالب القرآن المبدع";
+            if (gradeDisplay) gradeDisplay.innerText = currentStudent.grade || "الصف الرابع";
+
+            if (modal) {
+                modal.classList.remove('hidden');
+                playSuccessSound();
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                const studentNameText = currentStudent.name ? `البطل ${currentStudent.name}` : "";
+                speakText(`مبارك لك يا ${studentNameText}! لقد أنجزت جميع مهام سورة الفاتحة بنجاح باهر!`);
+            }
+        }
+
+        function closeCompletionScreen() {
+            const modal = document.getElementById('completion-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // ==================== GAME SWITCHER ====================
+        function switchGame(gameId) {
+            ['game-order', 'game-match', 'game-wheel'].forEach(g => {
+                const gEl = document.getElementById(g);
+                const btnEl = document.getElementById(`btn-${g}`);
+                if (gEl) gEl.classList.add('hidden');
+                if (btnEl) {
+                    btnEl.classList.remove('active-tab');
+                    btnEl.classList.add('bg-slate-100', 'text-slate-700');
+                }
+            });
+
+            const targetGame = document.getElementById(gameId);
+            const targetBtn = document.getElementById(`btn-${gameId}`);
+            if (targetGame) targetGame.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.classList.add('active-tab');
+                targetBtn.classList.remove('bg-slate-100', 'text-slate-700');
+            }
+
+            if (gameId === 'game-order') initOrderGame();
+            if (gameId === 'game-match') initMatchGame();
+            if (gameId === 'game-wheel') drawWheel();
+        }
+
+        // ==================== QUIZ ====================
+        const quizData = [
+            { q: "سورة الفاتحة هي أعظم سورة في القرآن الكريم.", options: ["صحيح", "خطأ"], correct: 0 },
+            { q: "معنى اسم الله (الرَّحْمَٰنِ الرَّحِيمِ) هو:", options: ["ذو الرحمة الواسعة الدائمة لجميع الخلائق", "الذي يعاقب المذنبين فقط", "الخالق فقط بدون رحمة"], correct: 0 },
+            { q: "ما معنى (اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ)؟", options: ["وفقنا وأرشدنا للحق وهو الإسلام", "ارزقنا الأموال فقط", "اعطنا الصحة فقط"], correct: 0 },
+            { q: "تسمى سورة الفاتحة بـ (السبع المثاني) لأنها:", options: ["تتكون من 7 آيات وتُكرر في كل صلاة", "نزلت في 7 أيام", "تتضمن 7 قصص"], correct: 0 },
+            { q: "الاستعانة والعبادة يجب أن تكون لـ:", options: ["الله وحده لا شريك له", "الأقوياء فقط", "المعلمين فقط"], correct: 0 }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+
+        function initQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            const container = document.getElementById('quiz-container');
+            const resultBox = document.getElementById('quiz-result-box');
+            if (!container) return;
+            container.classList.remove('hidden');
+            if (resultBox) resultBox.classList.add('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = quizData[currentQuizIndex];
+            if (!q) return;
+
+            document.getElementById('quiz-count').innerText = `السؤال ${currentQuizIndex + 1} من ${quizData.length}`;
+            document.getElementById('quiz-score-badge').innerText = `النقاط: ${quizScore}`;
+            document.getElementById('quiz-progress').style.width = `${((currentQuizIndex + 1) / quizData.length) * 100}%`;
+            document.getElementById('quiz-question-text').innerText = q.q;
+
+            const optsBox = document.getElementById('quiz-options');
+            optsBox.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-4 rounded-xl border border-slate-300 bg-white hover:bg-hudayi-50 font-bold text-slate-800 transition flex items-center justify-between shadow-sm text-sm gap-3";
+                btn.innerHTML = `<span>${opt}</span><i class="fa-regular fa-circle text-slate-400"></i>`;
+                btn.onclick = () => selectQuizOption(idx, btn);
+                optsBox.appendChild(btn);
+            });
+
+            document.getElementById('next-quiz-btn').classList.add('hidden');
+        }
+
+        function selectQuizOption(optIdx, btnEl) {
+            initAudioContext();
+            const q = quizData[currentQuizIndex];
+            const allBtns = document.getElementById('quiz-options').children;
+
+            for (let b of allBtns) b.disabled = true;
+
+            if (optIdx === q.correct) {
+                playSuccessSound();
+                btnEl.className = "w-full text-right p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-900 transition flex items-center justify-between shadow-sm text-sm gap-3";
+                btnEl.querySelector('i').className = "fa-solid fa-circle-check text-emerald-600 text-xl";
+                quizScore++;
+            } else {
+                playErrorSound();
+                btnEl.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-50 font-bold text-red-900 transition flex items-center justify-between shadow-sm text-sm gap-3";
+                btnEl.querySelector('i').className = "fa-solid fa-circle-xmark text-red-600 text-xl";
+
+                allBtns[q.correct].className = "w-full text-right p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-900 transition flex items-center justify-between shadow-sm text-sm gap-3";
+                const correctIcon = allBtns[q.correct].querySelector('i');
+                if (correctIcon) correctIcon.className = "fa-solid fa-circle-check text-emerald-600 text-xl";
+            }
+
+            document.getElementById('next-quiz-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            const resBox = document.getElementById('quiz-result-box');
+            resBox.classList.remove('hidden');
+            document.getElementById('final-score').innerText = quizScore;
+
+            const studentName = currentStudent.name ? `يا ${currentStudent.name}` : "";
+
+            if (quizScore >= 4) {
+                playSuccessSound();
+                confetti({ particleCount: 120, spread: 80 });
+                markProgress('quiz');
+                const feedbackText = `رائع جداً ${studentName}! بارك الله فيك، أنت بطل الفاتحة المتفوق في مدرسة هدائي 10!`;
+                document.getElementById('final-feedback').innerText = feedbackText;
+                speakText(feedbackText);
+            } else {
+                playErrorSound();
+                const feedbackText = `محاولة طيبة ${studentName}! يمكنك إعادة قراءة التفسير وإعادة الاختبار للحصول على النتيجة الكاملة.`;
+                document.getElementById('final-feedback').innerText = feedbackText;
+                speakText(feedbackText);
+            }
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        // ==================== ANIMATED TAB TITLE (SMOOTH MARQUEE - SLOW & ALWAYS ON) ====================
+        const fullTitle = "منصة سورة الفاتحة التفاعلية - مدرسة هدائي 10 - مادة القرآن الكريم";
+        const titleMarquee = fullTitle + "     ✦     " + fullTitle + "     ✦     ";
+        const TITLE_WINDOW = 38;
+        const TITLE_SPEED  = 0.008;
+
+        let titleRafId = null;
+        let titleLastTime = 0;
+        let titlePos = 0;
+
+        function animateTabTitle(timestamp) {
+            if (!titleLastTime) titleLastTime = timestamp;
+            const dt = Math.min(timestamp - titleLastTime, 100);
+            titleLastTime = timestamp;
+
+            titlePos += dt * TITLE_SPEED;
+            if (titlePos >= titleMarquee.length) titlePos = 0;
+
+            const start = Math.floor(titlePos);
+            let visible = "";
+            for (let i = 0; i < TITLE_WINDOW; i++) {
+                visible += titleMarquee[(start + i) % titleMarquee.length];
+            }
+            document.title = visible.trim() ? visible : fullTitle;
+
+            titleRafId = requestAnimationFrame(animateTabTitle);
+        }
+
+        function startTitleAnimation() {
+            if (titleRafId) return;
+            titleLastTime = 0;
+            titleRafId = requestAnimationFrame(animateTabTitle);
+        }
+
+        function stopTitleAnimation() {
+            if (titleRafId) {
+                cancelAnimationFrame(titleRafId);
+                titleRafId = null;
+            }
+            titlePos = 0;
+            document.title = fullTitle;
+        }
+
+        startTitleAnimation();
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) startTitleAnimation();
+        });
+
+        // ==================== INIT ON LOAD ====================
+        window.addEventListener('DOMContentLoaded', function () {
+            audioEl = document.getElementById('quran-audio');
+
+            loadFromStorage();
+
+            if (!currentStudent.name) {
+                setTimeout(() => showWelcomeModal(), 350);
+            }
+
+            if (audioEl) {
+                audioEl.onended = () => {
+                    if (isPlayingFullSequence) {
+                        sequenceIndex++;
+                        playVerseSequence(sequenceIndex);
+                    } else if (currentPlayingIndex !== null && currentPlayingIndex < versesData.length - 1) {
+                        playVerse(currentPlayingIndex + 1);
+                    } else {
+                        resetAudioUI();
+                    }
+                };
+                audioEl.onerror = () => {
+                    console.log("Audio load error for:", audioEl.src);
+                    if (isPlayingFullSequence) {
+                        sequenceIndex++;
+                        playVerseSequence(sequenceIndex);
+                    }
+                };
+            }
+
+            renderVerses();
+            drawWheel();
+            updateProgressUI();
+            updateAllNextStageNavs();
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeCompletionScreen();
+                    closeCustomModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
